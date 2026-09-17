@@ -6,6 +6,7 @@ class CartItem {
   final Medicine? medicineDetail;
   final int quantity;
   final double lineTotal;
+  final String? selectedDosage;
 
   CartItem({
     required this.id,
@@ -13,6 +14,7 @@ class CartItem {
     this.medicineDetail,
     required this.quantity,
     required this.lineTotal,
+    this.selectedDosage,
   });
 
   factory CartItem.fromJson(Map<String, dynamic> json) {
@@ -24,9 +26,12 @@ class CartItem {
           : null,
       quantity: json['quantity'] ?? 1,
       lineTotal: (json['line_total'] ?? 0).toDouble(),
+      selectedDosage: json['selected_dosage'],
     );
   }
 
+  Medicine get medicine => medicineDetail ?? Medicine(id: medicineId, name: '', slug: '', price: 0, category: 0);
+  double get totalPrice => lineTotal > 0 ? lineTotal : medicine.price * quantity;
   bool get canIncrement => quantity < 10;
   bool get canDecrement => quantity > 1;
 }
@@ -37,6 +42,7 @@ class Cart {
   final double subtotal;
   final double deliveryFee;
   final double total;
+  final double discount;
 
   Cart({
     required this.id,
@@ -44,6 +50,7 @@ class Cart {
     this.subtotal = 0.0,
     this.deliveryFee = 0.0,
     this.total = 0.0,
+    this.discount = 0.0,
   });
 
   factory Cart.fromJson(Map<String, dynamic> json) {
@@ -56,6 +63,7 @@ class Cart {
       subtotal: (json['subtotal'] ?? 0).toDouble(),
       deliveryFee: (json['delivery_fee'] ?? 0).toDouble(),
       total: (json['total'] ?? 0).toDouble(),
+      discount: (json['discount'] ?? 0).toDouble(),
     );
   }
 

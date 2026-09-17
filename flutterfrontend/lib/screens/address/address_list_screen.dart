@@ -100,7 +100,7 @@ class _AddressListScreenState extends ConsumerState<AddressListScreen> {
               children: [
                 Row(
                   children: [
-                    Text(address.label, style: AppTextStyles.titleSmall),
+                    Text(address.displayLabel, style: AppTextStyles.titleSmall),
                     if (address.isDefault) ...[
                       const SizedBox(width: 8),
                       Container(

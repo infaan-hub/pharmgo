@@ -8,6 +8,8 @@ class EmptyState extends StatelessWidget {
   final String? subtitle;
   final String? buttonText;
   final VoidCallback? onButtonTap;
+  final String? actionText;
+  final VoidCallback? onAction;
 
   const EmptyState({
     super.key,
@@ -16,10 +18,15 @@ class EmptyState extends StatelessWidget {
     this.subtitle,
     this.buttonText,
     this.onButtonTap,
+    this.actionText,
+    this.onAction,
   });
 
   @override
   Widget build(BuildContext context) {
+    final String? displayText = buttonText ?? actionText;
+    final VoidCallback? displayAction = onButtonTap ?? onAction;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -55,10 +62,10 @@ class EmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
-            if (buttonText != null && onButtonTap != null) ...[
+            if (displayText != null && displayAction != null) ...[
               const SizedBox(height: 24),
               TextButton(
-                onPressed: onButtonTap,
+                onPressed: displayAction,
                 style: TextButton.styleFrom(
                   backgroundColor: AppColors.primaryDark,
                   padding: const EdgeInsets.symmetric(
@@ -70,7 +77,7 @@ class EmptyState extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  buttonText!.toUpperCase(),
+                  displayText.toUpperCase(),
                   style: AppTextStyles.buttonText.copyWith(fontSize: 12),
                 ),
               ),

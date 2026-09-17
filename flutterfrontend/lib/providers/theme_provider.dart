@@ -19,5 +19,6 @@ class ThemeNotifier extends StateNotifier<ThemeMode> {
 }
 
 final themeDataProvider = Provider<ThemeData>((ref) {
-  return AppTheme.lightTheme;
+  final themeMode = ref.watch(themeProvider);
+  return themeMode == ThemeMode.dark ? AppTheme.darkTheme : AppTheme.lightTheme;
 });

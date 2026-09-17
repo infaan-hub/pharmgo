@@ -5,6 +5,10 @@ import '../../core/theme/app_text_styles.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/primary_button.dart';
+import '../../widgets/empty_state.dart';
+import '../../widgets/loading_widget.dart';
+import '../../services/support_service.dart';
+import '../../models/faq.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -14,60 +18,63 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
+  final SupportService _supportService = SupportService();
   final _subjectController = TextEditingController();
   final _messageController = TextEditingController();
+  List<Faq> _faqs = [];
+  bool _isLoading = true;
   bool _isSubmitting = false;
+  String? _error;
 
-  final _faqs = [
-    {
-      'question': 'How do I upload a prescription?',
-      'answer':
-          'Go to the Upload Prescription screen, take a photo or select from gallery, and submit. Our team will verify it within 24 hours.',
-      'isExpanded': false,
-    },
-    {
-      'question': 'How long does delivery take?',
-      'answer':
-          'Standard delivery takes 1-2 business days. Express delivery is available for same-day delivery in select areas.',
-      'isExpanded': false,
-    },
-    {
-      'question': 'Can I cancel my order?',
-      'answer':
-          'You can cancel your order before it\'s confirmed. Once confirmed, please contact support for assistance.',
-      'isExpanded': false,
-    },
-    {
-      'question': 'How do I return a product?',
-      'answer':
-          'Unopened medicines can be returned within 7 days. Please contact our support team to initiate a return.',
-      'isExpanded': false,
-    },
-    {
-      'question': 'Is my personal information secure?',
-      'answer':
-          'Yes, we use industry-standard encryption to protect your personal and medical information.',
-      'isExpanded': false,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadFaqs();
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
     _subjectController.dispose();
     _messageController.dispose();
     super.dispose();
   }
 
+  Future<void> _loadFaqs() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final faqs = await _supportService.getFaqs();
+      setState(() {
+        _faqs = faqs;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
   void _submitForm() async {
-    if (_nameController.text.isNotEmpty &&
-        _emailController.text.isNotEmpty &&
-        _messageController.text.isNotEmpty) {
-      setState(() => _isSubmitting = true);
-      await Future.delayed(const Duration(seconds: 2));
+    if (_subjectController.text.isEmpty || _messageController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      await _supportService.submitSupportTicket(
+        subject: _subjectController.text,
+        message: _messageController.text,
+      );
       setState(() => _isSubmitting = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -76,10 +83,18 @@ class _SupportScreenState extends State<SupportScreen> {
             backgroundColor: AppColors.success,
           ),
         );
-        _nameController.clear();
-        _emailController.clear();
         _subjectController.clear();
         _messageController.clear();
+      }
+    } catch (e) {
+      setState(() => _isSubmitting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
     }
   }
@@ -100,27 +115,10 @@ class _SupportScreenState extends State<SupportScreen> {
             const SizedBox(height: 32),
             Text('Frequently Asked Questions', style: AppTextStyles.headlineMedium),
             const SizedBox(height: 16),
-            ..._faqs.asMap().entries.map((entry) {
-              return _buildFaqItem(entry.key, entry.value);
-            }),
+            _buildFaqsSection(),
             const SizedBox(height: 32),
             Text('Send a Message', style: AppTextStyles.headlineMedium),
             const SizedBox(height: 16),
-            AppTextField(
-              label: 'Name',
-              hint: 'Your name',
-              controller: _nameController,
-              prefix: const Icon(Icons.person_outline, size: 20),
-            ),
-            const SizedBox(height: 12),
-            AppTextField(
-              label: 'Email',
-              hint: 'Your email',
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              prefix: const Icon(Icons.email_outlined, size: 20),
-            ),
-            const SizedBox(height: 12),
             AppTextField(
               label: 'Subject',
               hint: 'Subject',
@@ -143,6 +141,38 @@ class _SupportScreenState extends State<SupportScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildFaqsSection() {
+    if (_isLoading) {
+      return const Center(child: LoadingWidget());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: EmptyState(
+          icon: Icons.error_outline,
+          title: 'Error loading FAQs',
+          subtitle: _error!,
+          actionText: 'Retry',
+          onAction: _loadFaqs,
+        ),
+      );
+    }
+
+    if (_faqs.isEmpty) {
+      return const EmptyState(
+        icon: Icons.help_outline,
+        title: 'No FAQs available',
+        subtitle: 'Check back later',
+      );
+    }
+
+    return Column(
+      children: _faqs.asMap().entries.map((entry) {
+        return _buildFaqItem(entry.value);
+      }).toList(),
     );
   }
 
@@ -210,8 +240,7 @@ class _SupportScreenState extends State<SupportScreen> {
     );
   }
 
-  Widget _buildFaqItem(int index, Map<String, dynamic> faq) {
-    final isExpanded = faq['isExpanded'] as bool;
+  Widget _buildFaqItem(Faq faq) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
@@ -223,19 +252,12 @@ class _SupportScreenState extends State<SupportScreen> {
         tilePadding: const EdgeInsets.symmetric(horizontal: 16),
         childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         title: Text(
-          faq['question'] as String,
+          faq.question,
           style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w500),
         ),
-        trailing: Icon(
-          isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-          color: AppColors.textSecondary,
-        ),
-        onExpansionChanged: (expanded) {
-          setState(() => _faqs[index]['isExpanded'] = expanded);
-        },
         children: [
           Text(
-            faq['answer'] as String,
+            faq.answer,
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
               height: 1.5,

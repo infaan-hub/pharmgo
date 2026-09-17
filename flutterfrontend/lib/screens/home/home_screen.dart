@@ -7,8 +7,6 @@ import '../../core/routing/app_router.dart';
 import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/nav_rail.dart';
 import '../../widgets/category_circle.dart';
-import '../../widgets/promo_banner.dart';
-import '../../widgets/medicine_card.dart';
 import '../../widgets/product_image.dart';
 import '../../core/utils/breakpoints.dart';
 import '../../core/utils/formatters.dart';
@@ -52,7 +50,7 @@ class HomeScreen extends ConsumerWidget {
                         const SizedBox(height: 28),
                         _buildSectionTitle('Shop by Category', onViewAll: () => context.go(AppRouter.categories)),
                         const SizedBox(height: 16),
-                        _buildCategoryGrid(context),
+                        _buildCategoryGrid(context, ref),
                         const SizedBox(height: 28),
                         _buildPromoStrip(),
                         const SizedBox(height: 28),
@@ -275,34 +273,71 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategoryGrid(BuildContext context) {
-    final categories = [
-      {'name': 'Prescription', 'icon': Icons.receipt_long},
-      {'name': 'OTC', 'icon': Icons.medication},
-      {'name': 'Vitamins', 'icon': Icons.local_fire_department},
-      {'name': 'Personal Care', 'icon': Icons.spa},
-      {'name': 'Baby Care', 'icon': Icons.child_care},
-      {'name': 'Diabetes', 'icon': Icons.bloodtype},
-      {'name': 'Heart Care', 'icon': Icons.favorite},
-      {'name': 'Ayurveda', 'icon': Icons.eco},
-    ];
+  Widget _buildCategoryGrid(BuildContext context, WidgetRef ref) {
+    final categoriesAsync = ref.watch(categoryListProvider);
 
-    return SizedBox(
-      height: 110,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final cat = categories[index];
-          return CategoryCircle(
-            name: cat['name'] as String,
-            icon: cat['icon'] as IconData,
-            onTap: () => context.go(AppRouter.categories),
-          );
-        },
+    return categoriesAsync.when(
+      data: (categories) {
+        if (categories.isEmpty) {
+          return const Center(child: Text('No categories found'));
+        }
+        return SizedBox(
+          height: 110,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final cat = categories[index];
+              return CategoryCircle(
+                name: cat.name,
+                icon: _getCategoryIcon(cat.name),
+                onTap: () => context.go('/categories/${cat.id}/medicines'),
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 110,
+        child: Center(child: CircularProgressIndicator(color: AppColors.primaryDark)),
+      ),
+      error: (e, _) => SizedBox(
+        height: 110,
+        child: Center(child: Text('Error: $e')),
       ),
     );
+  }
+
+  IconData _getCategoryIcon(String categoryName) {
+    switch (categoryName.toLowerCase()) {
+      case 'prescription':
+        return Icons.receipt_long;
+      case 'otc':
+        return Icons.medication;
+      case 'vitamins':
+        return Icons.local_fire_department;
+      case 'personal care':
+        return Icons.spa;
+      case 'baby care':
+        return Icons.child_care;
+      case 'diabetes':
+        return Icons.bloodtype;
+      case 'heart care':
+        return Icons.favorite;
+      case 'ayurveda':
+        return Icons.eco;
+      case 'pain relief':
+        return Icons.healing;
+      case 'skin care':
+        return Icons.face;
+      case 'devices':
+        return Icons.medical_services;
+      case 'first aid':
+        return Icons.emergency;
+      default:
+        return Icons.category;
+    }
   }
 
   Widget _buildPromoStrip() {

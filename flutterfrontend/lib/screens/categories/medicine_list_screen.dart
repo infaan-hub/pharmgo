@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
+import '../../core/utils/breakpoints.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/medicine_card.dart';
 import '../../widgets/filter_chip_widget.dart';
@@ -10,7 +10,6 @@ import '../../widgets/loading_widget.dart';
 import '../../widgets/error_state.dart';
 import '../../widgets/empty_state.dart';
 import '../../providers/medicine_provider.dart';
-import '../../models/medicine.dart';
 
 class MedicineListScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -39,6 +38,7 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
   @override
   Widget build(BuildContext context) {
     final medicineState = ref.watch(medicineListProvider);
+    final isDesktop = Breakpoints.isDesktop(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -46,7 +46,7 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+            padding: EdgeInsets.fromLTRB(isDesktop ? 32 : 20, 8, isDesktop ? 32 : 20, 8),
             child: SizedBox(
               height: 36,
               child: ListView.separated(
@@ -102,6 +102,29 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
         icon: Icons.medication_outlined,
         title: 'No medicines found',
         subtitle: 'Try adjusting your filters',
+      );
+    }
+
+    final isDesktop = Breakpoints.isDesktop(context);
+    final columns = Breakpoints.gridColumns(context);
+
+    if (isDesktop || Breakpoints.isTablet(context)) {
+      return GridView.builder(
+        padding: EdgeInsets.all(Breakpoints.isDesktop(context) ? 32 : 20),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: columns,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 0.75,
+        ),
+        itemCount: state.medicines.length,
+        itemBuilder: (context, index) {
+          return MedicineCard(
+            medicine: state.medicines[index],
+            onTap: () => context.go('/medicine/${state.medicines[index].id}'),
+            onAddToCart: () {},
+          );
+        },
       );
     }
 

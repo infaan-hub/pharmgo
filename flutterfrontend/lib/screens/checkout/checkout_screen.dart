@@ -6,7 +6,6 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../core/routing/app_router.dart';
 import '../../widgets/app_bar_widget.dart';
-import '../../widgets/quantity_stepper.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/product_image.dart';
 import '../../providers/cart_provider.dart';
@@ -55,7 +54,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          addressState.defaultAddress!.label,
+                          addressState.defaultAddress!.displayLabel,
                           style: AppTextStyles.titleSmall,
                         ),
                         const SizedBox(height: 4),
@@ -192,7 +191,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  item.selectedDosage,
+                  item.selectedDosage ?? '',
                   style: AppTextStyles.labelSmall,
                 ),
               ],

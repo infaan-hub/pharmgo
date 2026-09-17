@@ -1,13 +1,12 @@
 import 'medicine.dart';
 
-enum OrderStatus { placed, confirmed, verifying, outForDelivery, delivered, cancelled }
-
 class OrderItem {
   final int id;
   final int medicineId;
   final Medicine? medicineDetail;
   final int quantity;
   final double priceAtPurchase;
+  final String? selectedDosage;
 
   OrderItem({
     required this.id,
@@ -15,6 +14,7 @@ class OrderItem {
     this.medicineDetail,
     required this.quantity,
     required this.priceAtPurchase,
+    this.selectedDosage,
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
@@ -26,9 +26,11 @@ class OrderItem {
           : null,
       quantity: json['quantity'] ?? 1,
       priceAtPurchase: (json['price_at_purchase'] ?? 0).toDouble(),
+      selectedDosage: json['selected_dosage'],
     );
   }
 
+  Medicine get medicine => medicineDetail ?? Medicine(id: medicineId, name: '', slug: '', price: 0, category: 0);
   double get totalPrice => priceAtPurchase * quantity;
 }
 
@@ -42,6 +44,9 @@ class Order {
   final double total;
   final List<OrderItem> items;
   final DateTime createdAt;
+  final String? orderNumber;
+  final String? shippingAddress;
+  final double discount;
 
   Order({
     required this.id,
@@ -53,13 +58,16 @@ class Order {
     required this.total,
     this.items = const [],
     required this.createdAt,
+    this.orderNumber,
+    this.shippingAddress,
+    this.discount = 0.0,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'] ?? 0,
-      address: json['address'] ?? 0,
-      paymentMethod: json['payment_method'] ?? 0,
+      address: json['address'] is int ? json['address'] : 0,
+      paymentMethod: json['payment_method'] is int ? json['payment_method'] : 0,
       status: json['status'] ?? 'placed',
       subtotal: (json['subtotal'] ?? 0).toDouble(),
       deliveryFee: (json['delivery_fee'] ?? 0).toDouble(),
@@ -69,6 +77,9 @@ class Order {
               .toList() ??
           [],
       createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
+      orderNumber: json['order_number'] ?? 'ORD-${json['id']}',
+      shippingAddress: json['shipping_address'] ?? '',
+      discount: (json['discount'] ?? 0).toDouble(),
     );
   }
 

@@ -76,7 +76,7 @@ class MedicineCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    medicine.manufacturer,
+                    medicine.manufacturer ?? '',
                     style: AppTextStyles.bodySmall,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

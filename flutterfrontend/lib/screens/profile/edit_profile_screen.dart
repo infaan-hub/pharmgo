@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/app_text_field.dart';

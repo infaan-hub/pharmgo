@@ -6,7 +6,9 @@ import '../../core/routing/app_router.dart';
 import '../../widgets/primary_button.dart';
 
 class OrderConfirmationScreen extends StatelessWidget {
-  const OrderConfirmationScreen({super.key});
+  final String? orderId;
+
+  const OrderConfirmationScreen({super.key, this.orderId});
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +64,7 @@ class OrderConfirmationScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Order #PG-2024-001',
+                      'Order #${orderId ?? 'N/A'}',
                       style: AppTextStyles.titleSmall,
                     ),
                   ],
@@ -71,7 +73,13 @@ class OrderConfirmationScreen extends StatelessWidget {
               const Spacer(flex: 2),
               PrimaryButton(
                 text: 'Track Order',
-                onPressed: () => context.go(AppRouter.orderTracking),
+                onPressed: () {
+                  if (orderId != null) {
+                    context.go('/orders/$orderId/tracking');
+                  } else {
+                    context.go(AppRouter.orderHistory);
+                  }
+                },
               ),
               const SizedBox(height: 12),
               TextButton(

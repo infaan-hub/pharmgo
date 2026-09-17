@@ -50,10 +50,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  Future<void> login({required String email, required String password}) async {
+  Future<void> login({required String username, required String password}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final user = await _authService.login(email: email, password: password);
+      final user = await _authService.login(username: username, password: password);
       state = AuthState(isAuthenticated: true, user: user);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -62,6 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> signup({
     required String fullName,
+    required String username,
     required String email,
     required String phone,
     required String password,
@@ -71,6 +72,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final user = await _authService.signup(
         fullName: fullName,
+        username: username,
         email: email,
         phone: phone,
         password: password,
@@ -91,12 +93,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     String? firstName,
     String? lastName,
     String? phone,
+    String? fullName,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
+      String? fn = firstName;
+      String? ln = lastName;
+      if (fullName != null) {
+        final parts = fullName.split(' ');
+        fn = parts.isNotEmpty ? parts.first : null;
+        ln = parts.length > 1 ? parts.sublist(1).join(' ') : null;
+      }
       final user = await _authService.updateProfile(
-        firstName: firstName,
-        lastName: lastName,
+        firstName: fn,
+        lastName: ln,
         phone: phone,
       );
       state = state.copyWith(isLoading: false, user: user);

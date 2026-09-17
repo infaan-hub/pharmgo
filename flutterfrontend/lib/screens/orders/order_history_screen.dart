@@ -5,7 +5,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../widgets/app_bar_widget.dart';
-import '../../widgets/bottom_nav_bar.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/loading_widget.dart';
 import '../../providers/order_provider.dart';
@@ -56,10 +55,10 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   Widget _buildOrderCard(Order order) {
     Color statusColor;
     switch (order.status) {
-      case OrderStatus.delivered:
+      case 'delivered':
         statusColor = AppColors.success;
         break;
-      case OrderStatus.cancelled:
+      case 'cancelled':
         statusColor = AppColors.error;
         break;
       default:

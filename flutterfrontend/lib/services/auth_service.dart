@@ -28,9 +28,9 @@ class AuthService {
     }
   }
 
-  Future<User> login({required String email, required String password}) async {
+  Future<User> login({required String username, required String password}) async {
     final response = await _dio.post(ApiConstants.login, data: {
-      'email': email,
+      'username': username,
       'password': password,
     });
     final data = response.data;
@@ -42,6 +42,7 @@ class AuthService {
 
   Future<User> signup({
     required String fullName,
+    required String username,
     required String email,
     required String phone,
     required String password,
@@ -51,7 +52,7 @@ class AuthService {
     final firstName = nameParts.isNotEmpty ? nameParts.first : '';
     final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
     final response = await _dio.post(ApiConstants.register, data: {
-      'username': email.split('@').first,
+      'username': username,
       'email': email,
       'first_name': firstName,
       'last_name': lastName,
@@ -76,6 +77,18 @@ class AuthService {
 
   Future<void> resetPassword(String email) async {
     await _dio.post(ApiConstants.passwordReset, data: {'email': email});
+  }
+
+  Future<void> confirmResetPassword({
+    required String token,
+    required String newPassword,
+    required String newPasswordConfirm,
+  }) async {
+    await _dio.post('${ApiConstants.passwordReset}confirm/', data: {
+      'token': token,
+      'new_password': newPassword,
+      'new_password_confirm': newPasswordConfirm,
+    });
   }
 
   Future<User> getProfile() async {

@@ -8,8 +8,9 @@ final orderListProvider = StateNotifierProvider<OrderListNotifier, OrderListStat
   return OrderListNotifier(ref.read(orderServiceProvider));
 });
 
-final orderDetailProvider = FutureProvider.family<Order, int>((ref, orderId) async {
-  return ref.read(orderServiceProvider).getOrderDetail(orderId);
+final orderDetailProvider = FutureProvider.family<Order, dynamic>((ref, orderId) async {
+  final intId = orderId is String ? int.tryParse(orderId) ?? 0 : orderId;
+  return ref.read(orderServiceProvider).getOrderDetail(intId);
 });
 
 class OrderListState {

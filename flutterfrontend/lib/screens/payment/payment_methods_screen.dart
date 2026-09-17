@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../widgets/app_bar_widget.dart';
-import '../../widgets/empty_state.dart';
 import '../../widgets/primary_button.dart';
+import '../../widgets/empty_state.dart';
+import '../../widgets/loading_widget.dart';
+import '../../services/payment_service.dart';
+import '../../models/payment_method.dart';
 
 class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -14,11 +16,37 @@ class PaymentMethodsScreen extends StatefulWidget {
 }
 
 class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
-  String _selectedMethod = 'visa_4242';
-  final _methods = [
-    {'id': 'visa_4242', 'brand': 'Visa', 'last4': '4242', 'expiry': '12/26'},
-    {'id': 'master_8888', 'brand': 'Mastercard', 'last4': '8888', 'expiry': '06/25'},
-  ];
+  final PaymentService _paymentService = PaymentService();
+  List<PaymentMethod> _methods = [];
+  String? _selectedMethodId;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPaymentMethods();
+  }
+
+  Future<void> _loadPaymentMethods() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final methods = await _paymentService.getPaymentMethods();
+      setState(() {
+        _methods = methods;
+        _selectedMethodId = methods.where((m) => m.isDefault).firstOrNull?.id.toString();
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +55,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
       appBar: const AppBarWidget(title: 'Payment Methods'),
       body: Column(
         children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: _methods.length,
-              itemBuilder: (context, index) {
-                final method = _methods[index];
-                return _buildPaymentCard(method);
-              },
-            ),
-          ),
+          Expanded(child: _buildBody()),
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: PrimaryButton(
@@ -51,10 +70,48 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     );
   }
 
-  Widget _buildPaymentCard(Map<String, String> method) {
-    final isSelected = _selectedMethod == (method['id'] ?? '');
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: LoadingWidget());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: EmptyState(
+          icon: Icons.error_outline,
+          title: 'Error loading payment methods',
+          subtitle: _error!,
+          actionText: 'Retry',
+          onAction: _loadPaymentMethods,
+        ),
+      );
+    }
+
+    if (_methods.isEmpty) {
+      return const EmptyState(
+        icon: Icons.credit_card_outlined,
+        title: 'No payment methods',
+        subtitle: 'Add a card to get started',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadPaymentMethods,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: _methods.length,
+        itemBuilder: (context, index) {
+          final method = _methods[index];
+          return _buildPaymentCard(method);
+        },
+      ),
+    );
+  }
+
+  Widget _buildPaymentCard(PaymentMethod method) {
+    final isSelected = _selectedMethodId == method.id.toString();
     return GestureDetector(
-      onTap: () => setState(() => _selectedMethod = method['id'] ?? ''),
+      onTap: () => setState(() => _selectedMethodId = method.id.toString()),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
@@ -77,7 +134,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               ),
               child: Center(
                 child: Text(
-                  method['brand']!.substring(0, 1).toUpperCase(),
+                  method.cardType.substring(0, 1).toUpperCase(),
                   style: const TextStyle(
                     color: AppColors.white,
                     fontWeight: FontWeight.w700,
@@ -92,21 +149,21 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${method['brand']} •••• ${method['last4']}',
+                    '${method.cardType.toUpperCase()} •••• ${method.lastFour}',
                     style: AppTextStyles.titleSmall,
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Expires ${method['expiry']}',
+                    'Expires ${method.expiryMonth.toString().padLeft(2, '0')}/${method.expiryYear.toString().substring(2)}',
                     style: AppTextStyles.labelSmall,
                   ),
                 ],
               ),
             ),
             Radio<String>(
-              value: method['id']!,
-              groupValue: _selectedMethod,
-              onChanged: (v) => setState(() => _selectedMethod = v!),
+              value: method.id.toString(),
+              groupValue: _selectedMethodId,
+              onChanged: (v) => setState(() => _selectedMethodId = v),
               activeColor: AppColors.primaryDark,
             ),
           ],
@@ -116,6 +173,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
   }
 
   void _showAddCardSheet() {
+    final cardNumberController = TextEditingController();
+    final expiryController = TextEditingController();
+    final cvvController = TextEditingController();
+    final nameController = TextEditingController();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -143,25 +205,52 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
             const SizedBox(height: 20),
             Text('Add New Card', style: AppTextStyles.headlineMedium),
             const SizedBox(height: 24),
-            _buildBottomSheetField('Card Number', '1234 5678 9012 3456'),
+            _buildBottomSheetField('Card Number', '1234 5678 9012 3456', cardNumberController),
             const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
-                  child: _buildBottomSheetField('MM/YY', '12/26'),
+                  child: _buildBottomSheetField('MM/YY', '12/26', expiryController),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: _buildBottomSheetField('CVV', '123'),
+                  child: _buildBottomSheetField('CVV', '123', cvvController),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            _buildBottomSheetField('Name on Card', 'John Doe'),
+            _buildBottomSheetField('Name on Card', 'John Doe', nameController),
             const SizedBox(height: 24),
             PrimaryButton(
               text: 'Add Card',
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                if (cardNumberController.text.isEmpty ||
+                    expiryController.text.isEmpty ||
+                    nameController.text.isEmpty) {
+                  return;
+                }
+
+                try {
+                  final expiryParts = expiryController.text.split('/');
+                  await _paymentService.addPaymentMethod(
+                    cardType: 'visa',
+                    lastFour: cardNumberController.text.substring(
+                        cardNumberController.text.length - 4),
+                    cardholderName: nameController.text,
+                    expiryMonth: expiryParts[0],
+                    expiryYear: '20${expiryParts[1]}',
+                  );
+                  Navigator.pop(context);
+                  _loadPaymentMethods();
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error: $e'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              },
             ),
           ],
         ),
@@ -169,8 +258,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
     );
   }
 
-  Widget _buildBottomSheetField(String label, String hint) {
+  Widget _buildBottomSheetField(String label, String hint, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: AppTextStyles.bodyMedium,
       decoration: InputDecoration(
         labelText: label,

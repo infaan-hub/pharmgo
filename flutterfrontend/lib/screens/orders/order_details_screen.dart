@@ -84,7 +84,7 @@ class OrderDetailsScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.divider, width: 0.5),
             ),
-            child: Text(order.shippingAddress, style: AppTextStyles.bodyMedium),
+            child: Text(order.shippingAddress ?? '', style: AppTextStyles.bodyMedium),
           ),
           const SizedBox(height: 20),
           Text('Price Summary', style: AppTextStyles.titleMedium),
@@ -113,13 +113,13 @@ class OrderDetailsScreen extends ConsumerWidget {
             isBold: true,
           ),
           const SizedBox(height: 24),
-          if (order.status != OrderStatus.delivered &&
-              order.status != OrderStatus.cancelled)
+          if (order.status != 'delivered' &&
+              order.status != 'cancelled')
             PrimaryButton(
               text: 'Track Order',
               onPressed: () => context.go('/orders/${order.id}/tracking'),
             ),
-          if (order.status == OrderStatus.delivered) ...[
+          if (order.status == 'delivered') ...[
             PrimaryButton(
               text: 'Reorder',
               onPressed: () {},

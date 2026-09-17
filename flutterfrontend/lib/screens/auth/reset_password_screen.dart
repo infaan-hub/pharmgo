@@ -8,7 +8,9 @@ import '../../widgets/app_text_field.dart';
 import '../../services/auth_service.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final String? email;
+
+  const ResetPasswordScreen({super.key, this.email});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -16,6 +18,7 @@ class ResetPasswordScreen extends StatefulWidget {
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _tokenController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
@@ -26,6 +29,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   void dispose() {
+    _tokenController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -35,9 +39,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await _authService.resetPassword(
-          email: '',
-          password: _passwordController.text,
+        await _authService.confirmResetPassword(
+          token: _tokenController.text.trim(),
+          newPassword: _passwordController.text,
+          newPasswordConfirm: _confirmPasswordController.text,
         );
         setState(() {
           _isLoading = false;
@@ -75,19 +80,30 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         children: [
           const SizedBox(height: 20),
           IconButton(
-            onPressed: () => context.go(AppRouter.otp),
+            onPressed: () => context.go(AppRouter.otp, extra: {'email': widget.email ?? ''}),
             icon: const Icon(Icons.chevron_left, size: 28),
           ),
           const SizedBox(height: 16),
           Text('Reset Password', style: AppTextStyles.displayMedium),
           const SizedBox(height: 8),
           Text(
-            'Create a new password for your account',
+            'Enter the reset token from your email and create a new password',
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 40),
+          AppTextField(
+            label: 'Reset Token',
+            hint: 'Paste the token from your email',
+            controller: _tokenController,
+            prefix: const Icon(Icons.vpn_key_outlined, size: 20),
+            validator: (value) {
+              if (value == null || value.isEmpty) return 'Token is required';
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
           AppTextField(
             label: 'New Password',
             hint: 'Enter new password',

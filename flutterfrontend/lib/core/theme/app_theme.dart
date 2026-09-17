@@ -57,4 +57,58 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: AppColorsDark.background,
+      primaryColor: AppColorsDark.primaryDark,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColorsDark.primaryDark,
+        onPrimary: AppColorsDark.white,
+        secondary: AppColorsDark.success,
+        onSecondary: AppColorsDark.white,
+        surface: AppColorsDark.cardSurface,
+        onSurface: AppColorsDark.textPrimary,
+        error: AppColorsDark.error,
+        onError: AppColorsDark.white,
+        outline: AppColorsDark.divider,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColorsDark.background,
+        foregroundColor: AppColorsDark.textPrimary,
+        elevation: 0,
+        centerTitle: true,
+      ),
+      cardTheme: CardThemeData(
+        color: AppColorsDark.cardSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColorsDark.cardSurfaceAlt,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColorsDark.divider),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColorsDark.divider),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColorsDark.primaryDark, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      dividerTheme: const DividerThemeData(
+        color: AppColorsDark.divider,
+        thickness: 1,
+      ),
+    );
+  }
 }

@@ -11,7 +11,7 @@ final cartProvider = StateNotifierProvider<CartNotifier, Cart>((ref) {
 class CartNotifier extends StateNotifier<Cart> {
   final CartService _service;
 
-  CartNotifier(this._service) : super(Cart());
+  CartNotifier(this._service) : super(Cart(id: 0));
 
   Future<void> loadCart() async {
     try {
@@ -22,6 +22,7 @@ class CartNotifier extends StateNotifier<Cart> {
   Future<void> addToCart({
     required int medicineId,
     int quantity = 1,
+    String? dosage,
   }) async {
     try {
       await _service.addToCart(medicineId: medicineId, quantity: quantity);
@@ -46,7 +47,14 @@ class CartNotifier extends StateNotifier<Cart> {
   Future<void> clear() async {
     try {
       await _service.clearCart();
-      state = Cart();
+      state = Cart(id: 0);
+    } catch (_) {}
+  }
+
+  Future<void> applyPromoCode(String code) async {
+    // Promo code application - placeholder for API integration
+    try {
+      await loadCart();
     } catch (_) {}
   }
 }

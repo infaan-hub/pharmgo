@@ -13,8 +13,38 @@ final categoryListProvider = FutureProvider<List<Category>>((ref) async {
   return ref.read(medicineServiceProvider).getCategories();
 });
 
-final medicineDetailProvider = FutureProvider.family<Medicine, int>((ref, id) async {
-  return ref.read(medicineServiceProvider).getMedicineDetail(id);
+final medicineDetailProvider = FutureProvider.family<Medicine, dynamic>((ref, id) async {
+  final intId = id is String ? int.tryParse(id) ?? 0 : id;
+  return ref.read(medicineServiceProvider).getMedicineDetail(intId);
+});
+
+final bestSellersProvider = FutureProvider<List<Medicine>>((ref) async {
+  final service = ref.read(medicineServiceProvider);
+  final data = await service.getMedicines(ordering: '-rating_avg');
+  final List results = data is List ? data : (data['results'] ?? data['data'] ?? []);
+  return results.map((e) => Medicine.fromJson(e)).toList();
+});
+
+final trendingProvider = FutureProvider<List<Medicine>>((ref) async {
+  final service = ref.read(medicineServiceProvider);
+  final data = await service.getMedicines(ordering: '-stock_quantity');
+  final List results = data is List ? data : (data['results'] ?? data['data'] ?? []);
+  return results.map((e) => Medicine.fromJson(e)).toList();
+});
+
+final relatedMedicinesProvider = FutureProvider.family<List<Medicine>, dynamic>((ref, medicineId) async {
+  final service = ref.read(medicineServiceProvider);
+  try {
+    final medicine = await ref.read(medicineDetailProvider(medicineId).future);
+    final data = await service.getMedicines(categoryId: medicine.category);
+    final List results = data is List ? data : (data['results'] ?? data['data'] ?? []);
+    return results
+        .map((e) => Medicine.fromJson(e))
+        .where((m) => m.id != medicineId)
+        .toList();
+  } catch (_) {
+    return [];
+  }
 });
 
 class MedicineListState {
@@ -55,9 +85,10 @@ class MedicineListNotifier extends StateNotifier<MedicineListState> {
   MedicineListNotifier(this._service) : super(MedicineListState());
 
   Future<void> loadMedicines({
-    int? categoryId,
+    dynamic categoryId,
     String? search,
     String? ordering,
+    String? filter,
     bool refresh = false,
   }) async {
     if (refresh) {
@@ -65,10 +96,12 @@ class MedicineListNotifier extends StateNotifier<MedicineListState> {
     }
     if (state.isLoading || !state.hasMore) return;
 
+    final intCatId = categoryId is String ? int.tryParse(categoryId) : categoryId;
+
     state = state.copyWith(isLoading: true, error: null);
     try {
       final data = await _service.getMedicines(
-        categoryId: categoryId,
+        categoryId: intCatId,
         search: search,
         ordering: ordering,
         page: state.currentPage,

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
+import '../../core/utils/breakpoints.dart';
 import '../../core/routing/app_router.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/quantity_stepper.dart';
@@ -40,6 +41,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   @override
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
+    final isDesktop = Breakpoints.isDesktop(context);
+    final isTablet = Breakpoints.isTablet(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -60,21 +63,42 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               subtitle: 'Add medicines to get started',
               buttonText: 'Browse Medicines',
             )
-          : Column(
-              children: [
-                Expanded(
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: cart.items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      return _buildCartItem(cart.items[index]);
-                    },
-                  ),
+          : (isDesktop || isTablet)
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: ListView.separated(
+                        padding: EdgeInsets.all(isDesktop ? 32 : 20),
+                        itemCount: cart.items.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          return _buildCartItem(cart.items[index]);
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      width: 360,
+                      child: _buildCartSummary(cart),
+                    ),
+                  ],
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(20),
+                        itemCount: cart.items.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          return _buildCartItem(cart.items[index]);
+                        },
+                      ),
+                    ),
+                    _buildCartSummary(cart),
+                  ],
                 ),
-                _buildCartSummary(cart),
-              ],
-            ),
     );
   }
 
@@ -107,7 +131,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  item.selectedDosage,
+                  item.selectedDosage ?? '',
                   style: AppTextStyles.labelSmall,
                 ),
                 const SizedBox(height: 6),

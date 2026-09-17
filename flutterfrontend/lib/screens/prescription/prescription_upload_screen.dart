@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -265,14 +264,14 @@ class _PrescriptionUploadScreenState
   Widget _buildPrescriptionItem(Prescription prescription) {
     Color statusColor;
     switch (prescription.status) {
-      case PrescriptionStatus.verified:
+      case PrescriptionStatus.approved:
         statusColor = AppColors.success;
         break;
       case PrescriptionStatus.rejected:
         statusColor = AppColors.error;
         break;
       default:
-        statusColor = const Color(0xFFF4B41B);
+        statusColor = AppColors.accent;
     }
 
     return Container(
@@ -292,7 +291,7 @@ class _PrescriptionUploadScreenState
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              prescription.status == PrescriptionStatus.verified
+              prescription.status == PrescriptionStatus.approved
                   ? Icons.check_circle
                   : prescription.status == PrescriptionStatus.rejected
                       ? Icons.cancel
@@ -323,7 +322,7 @@ class _PrescriptionUploadScreenState
             ),
           ),
           Text(
-            Formatters.timeAgo(prescription.uploadedAt),
+            Formatters.timeAgo(prescription.uploadedAt ?? DateTime.now()),
             style: AppTextStyles.labelSmall,
           ),
         ],

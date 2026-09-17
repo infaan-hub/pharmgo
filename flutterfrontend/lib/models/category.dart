@@ -1,20 +1,22 @@
 class Category {
-  final int id;
+  final dynamic id;
   final String name;
   final String slug;
   final String? description;
   final String? icon;
   final String? image;
   final bool isActive;
+  final int medicineCount;
 
   Category({
     required this.id,
     required this.name,
-    required this.slug,
+    this.slug = '',
     this.description,
     this.icon,
     this.image,
     this.isActive = true,
+    this.medicineCount = 0,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class Category {
       icon: json['icon'],
       image: json['image'],
       isActive: json['is_active'] ?? true,
+      medicineCount: json['medicine_count'] ?? 0,
     );
   }
 }

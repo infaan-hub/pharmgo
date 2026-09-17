@@ -1,95 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/loading_widget.dart';
+import '../../providers/notification_provider.dart';
+import '../../models/notification.dart';
 
-class NotificationsScreen extends StatefulWidget {
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  final _notifications = [
-    {
-      'title': 'Order Delivered',
-      'body': 'Your order #PG-2024-001 has been delivered successfully.',
-      'time': DateTime.now().subtract(const Duration(hours: 2)),
-      'isRead': false,
-      'icon': Icons.check_circle,
-      'color': AppColors.success,
-    },
-    {
-      'title': 'Prescription Verified',
-      'body': 'Your prescription has been verified. You can now order medicines.',
-      'time': DateTime.now().subtract(const Duration(hours: 5)),
-      'isRead': true,
-      'icon': Icons.verified,
-      'color': AppColors.primaryDark,
-    },
-    {
-      'title': 'Special Offer',
-      'body': 'Get 20% off on all vitamins. Use code VITAMIN20.',
-      'time': DateTime.now().subtract(const Duration(days: 1)),
-      'isRead': true,
-      'icon': Icons.local_offer,
-      'color': const Color(0xFFF4B41B),
-    },
-    {
-      'title': 'Order Shipped',
-      'body': 'Your order #PG-2024-002 is on the way.',
-      'time': DateTime.now().subtract(const Duration(days: 2)),
-      'isRead': true,
-      'icon': Icons.local_shipping,
-      'color': AppColors.primaryDark,
-    },
-  ];
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationListProvider.notifier).loadNotifications(refresh: true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final notificationState = ref.watch(notificationListProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBarWidget(
         title: 'Notifications',
         actions: [
-          TextButton(
-            onPressed: () {
-              setState(() {
-                for (var n in _notifications) {
-                  n['isRead'] = true;
-                }
-              });
-            },
-            child: Text(
-              'Mark all read',
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.primaryDark,
+          if (notificationState.notifications.isNotEmpty)
+            TextButton(
+              onPressed: _markAllAsRead,
+              child: Text(
+                'Mark all read',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.primaryDark,
+                ),
               ),
             ),
-          ),
         ],
       ),
-      body: _notifications.isEmpty
-          ? const EmptyState(
-              icon: Icons.notifications_outlined,
-              title: 'No notifications',
-              subtitle: 'You\'re all caught up!',
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: _notifications.length,
-              itemBuilder: (context, index) {
-                return _buildNotificationCard(_notifications[index]);
-              },
-            ),
+      body: _buildBody(notificationState),
     );
   }
 
-  Widget _buildNotificationCard(Map<String, dynamic> notification) {
-    final isRead = notification['isRead'] as bool;
+  Widget _buildBody(NotificationListState state) {
+    if (state.isLoading && state.notifications.isEmpty) {
+      return const Center(child: LoadingWidget());
+    }
+
+    if (state.error != null && state.notifications.isEmpty) {
+      return Center(
+        child: EmptyState(
+          icon: Icons.error_outline,
+          title: 'Error loading notifications',
+          subtitle: state.error!,
+          actionText: 'Retry',
+          onAction: () => ref.read(notificationListProvider.notifier).loadNotifications(refresh: true),
+        ),
+      );
+    }
+
+    if (state.notifications.isEmpty) {
+      return const EmptyState(
+        icon: Icons.notifications_outlined,
+        title: 'No notifications',
+        subtitle: 'You\'re all caught up!',
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => ref.read(notificationListProvider.notifier).loadNotifications(refresh: true),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: state.notifications.length,
+        itemBuilder: (context, index) {
+          final notification = state.notifications[index];
+          return _buildNotificationCard(notification);
+        },
+      ),
+    );
+  }
+
+  Widget _buildNotificationCard(AppNotification notification) {
+    final isRead = notification.isRead;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -108,12 +108,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: (notification['color'] as Color).withOpacity(0.1),
+              color: _getNotificationColor(notification.type).withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              notification['icon'] as IconData,
-              color: notification['color'] as Color,
+              _getNotificationIcon(notification.type),
+              color: _getNotificationColor(notification.type),
               size: 20,
             ),
           ),
@@ -126,7 +126,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        notification['title'] as String,
+                        notification.title,
                         style: AppTextStyles.titleSmall.copyWith(
                           fontWeight: isRead ? FontWeight.w500 : FontWeight.w700,
                         ),
@@ -145,14 +145,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  notification['body'] as String,
+                  notification.body,
                   style: AppTextStyles.bodySmall,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  Formatters.timeAgo(notification['time'] as DateTime),
+                  Formatters.timeAgo(notification.createdAt),
                   style: AppTextStyles.labelSmall,
                 ),
               ],
@@ -161,5 +161,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ],
       ),
     );
+  }
+
+  Color _getNotificationColor(String type) {
+    switch (type) {
+      case 'order_update':
+        return AppColors.success;
+      case 'prescription':
+        return AppColors.primaryDark;
+      case 'promo':
+        return AppColors.accent;
+      default:
+        return AppColors.primaryDark;
+    }
+  }
+
+  IconData _getNotificationIcon(String type) {
+    switch (type) {
+      case 'order_update':
+        return Icons.check_circle;
+      case 'prescription':
+        return Icons.verified;
+      case 'promo':
+        return Icons.local_offer;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  void _markAllAsRead() {
+    for (final notification in ref.read(notificationListProvider).notifications) {
+      if (!notification.isRead) {
+        ref.read(notificationListProvider.notifier).markAsRead(notification.id);
+      }
+    }
   }
 }

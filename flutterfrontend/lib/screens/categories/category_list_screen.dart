@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/routing/app_router.dart';
+import '../../core/utils/breakpoints.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/loading_widget.dart';
 import '../../widgets/error_state.dart';
@@ -21,7 +21,7 @@ class CategoryListScreen extends ConsumerWidget {
       backgroundColor: AppColors.background,
       appBar: const AppBarWidget(title: 'Categories'),
       body: categoriesAsync.when(
-        data: (categories) => _buildCategories(context, categories),
+        data: (categories) => _buildCategories(context, ref, categories),
         loading: () => const LoadingWidget(),
         error: (e, _) => ErrorState(
           message: e.toString(),
@@ -32,7 +32,7 @@ class CategoryListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCategories(BuildContext context, List<Category> categories) {
+  Widget _buildCategories(BuildContext context, WidgetRef ref, List<Category> categories) {
     final displayCategories = categories.isNotEmpty
         ? categories
         : [
@@ -57,53 +57,59 @@ class CategoryListScreen extends ConsumerWidget {
       Icons.eco,
     ];
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1,
-      ),
-      itemCount: displayCategories.length,
-      itemBuilder: (context, index) {
-        final category = displayCategories[index];
-        final icon = icons[index % icons.length];
-        return GestureDetector(
-          onTap: () => context.go('/categories/${category.id}/medicines'),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.divider, width: 0.5),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: const BoxDecoration(
-                    color: AppColors.cardSurface,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: AppColors.primaryDark, size: 28),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  category.name,
-                  style: AppTextStyles.titleSmall,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${category.medicineCount} items',
-                  style: AppTextStyles.labelSmall,
-                ),
-              ],
-            ),
+    final columns = Breakpoints.gridColumns(context);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return GridView.builder(
+          padding: EdgeInsets.all(Breakpoints.isDesktop(context) ? 32 : 20),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 1,
           ),
+          itemCount: displayCategories.length,
+          itemBuilder: (context, index) {
+            final category = displayCategories[index];
+            final icon = icons[index % icons.length];
+            return GestureDetector(
+              onTap: () => context.go('/categories/${category.id}/medicines'),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.divider, width: 0.5),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: const BoxDecoration(
+                        color: AppColors.cardSurface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, color: AppColors.primaryDark, size: 28),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      category.name,
+                      style: AppTextStyles.titleSmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${category.medicineCount} items',
+                      style: AppTextStyles.labelSmall,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );

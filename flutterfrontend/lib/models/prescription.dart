@@ -6,6 +6,8 @@ class Prescription {
   final String? file;
   final PrescriptionStatus status;
   final String? pharmacistNotes;
+  final String? fileName;
+  final DateTime? uploadedAt;
 
   Prescription({
     required this.id,
@@ -13,6 +15,8 @@ class Prescription {
     this.file,
     required this.status,
     this.pharmacistNotes,
+    this.fileName,
+    this.uploadedAt,
   });
 
   factory Prescription.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class Prescription {
         orElse: () => PrescriptionStatus.pending,
       ),
       pharmacistNotes: json['pharmacist_notes'],
+      fileName: json['file_name'] ?? json['image']?.split('/').last,
+      uploadedAt: json['uploaded_at'] != null ? DateTime.parse(json['uploaded_at']) : null,
     );
   }
 

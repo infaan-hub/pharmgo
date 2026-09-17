@@ -7,7 +7,9 @@ import '../../widgets/primary_button.dart';
 import '../../services/auth_service.dart';
 
 class OtpScreen extends StatefulWidget {
-  const OtpScreen({super.key});
+  final String email;
+
+  const OtpScreen({super.key, required this.email});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -37,9 +39,11 @@ class _OtpScreenState extends State<OtpScreen> {
     if (_otpCode.length == 6) {
       setState(() => _isLoading = true);
       try {
-        await _authService.verifyOtp(email: '', otp: _otpCode);
+        await _authService.verifyOtp(email: widget.email, otp: _otpCode);
         setState(() => _isLoading = false);
-        if (mounted) context.go(AppRouter.resetPassword);
+        if (mounted) {
+          context.go(AppRouter.resetPassword, extra: {'email': widget.email});
+        }
       } catch (e) {
         setState(() => _isLoading = false);
         if (mounted) {

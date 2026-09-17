@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/utils/formatters.dart';
-import '../../widgets/app_bar_widget.dart';
 import '../../widgets/quantity_stepper.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/star_rating.dart';
@@ -105,7 +104,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
                                 Text(medicine.name, style: AppTextStyles.displaySmall),
                                 const SizedBox(height: 4),
                                 Text(
-                                  medicine.manufacturer,
+                                  medicine.manufacturer ?? '',
                                   style: AppTextStyles.bodyMedium.copyWith(
                                     color: AppColors.textSecondary,
                                   ),
@@ -277,7 +276,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: AppColors.shadow,
               blurRadius: 8,
             ),
           ],

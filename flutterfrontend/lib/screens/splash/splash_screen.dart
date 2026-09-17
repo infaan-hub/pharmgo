@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/routing/app_router.dart';
+import '../../providers/auth_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
+class _SplashScreenState extends ConsumerState<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeIn;
@@ -41,11 +42,22 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: AppConstants.splashDuration), () {
-      if (mounted) {
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    await ref.read(authStateProvider.notifier).init();
+
+    await Future.delayed(Duration(milliseconds: AppConstants.splashDuration));
+
+    if (mounted) {
+      final authState = ref.read(authStateProvider);
+      if (authState.isAuthenticated) {
+        context.go(AppRouter.home);
+      } else {
         context.go(AppRouter.onboarding);
       }
-    });
+    }
   }
 
   @override

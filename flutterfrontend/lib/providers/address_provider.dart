@@ -57,22 +57,27 @@ class AddressListNotifier extends StateNotifier<AddressListState> {
   }
 
   Future<void> addAddress({
-    required String name,
-    required String addressLine1,
+    String? name,
+    String? addressLine1,
     String? addressLine2,
-    required String city,
-    required String stateValue,
-    required String zipCode,
+    String? city,
+    String? stateValue,
+    String? zipCode,
+    String? label,
+    String? fullName,
+    String? phone,
+    String? street,
+    String? apartment,
     bool isDefault = false,
   }) async {
     try {
       final address = await _service.addAddress(
-        name: name,
-        addressLine1: addressLine1,
-        addressLine2: addressLine2,
-        city: city,
-        state: stateValue,
-        zipCode: zipCode,
+        name: name ?? fullName ?? '',
+        addressLine1: addressLine1 ?? street ?? '',
+        addressLine2: addressLine2 ?? apartment,
+        city: city ?? '',
+        state: stateValue ?? '',
+        zipCode: zipCode ?? '',
         isDefault: isDefault,
       );
       state = state.copyWith(addresses: [...state.addresses, address]);
@@ -87,6 +92,34 @@ class AddressListNotifier extends StateNotifier<AddressListState> {
       state = state.copyWith(
         addresses: state.addresses.where((a) => a.id != id).toList(),
       );
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> setDefault(int id) async {
+    try {
+      final updatedAddresses = state.addresses.map((a) {
+        return Address(
+          id: a.id,
+          name: a.name,
+          addressLine1: a.addressLine1,
+          addressLine2: a.addressLine2,
+          city: a.city,
+          state: a.state,
+          zipCode: a.zipCode,
+          country: a.country,
+          isDefault: a.id == id,
+          lat: a.lat,
+          lng: a.lng,
+          label: a.label,
+          fullName: a.fullName,
+          phone: a.phone,
+          street: a.street,
+          apartment: a.apartment,
+        );
+      }).toList();
+      state = state.copyWith(addresses: updatedAddresses);
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }

@@ -31,7 +31,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await _authService.forgotPassword(_emailController.text.trim());
+        await _authService.requestOtp(_emailController.text.trim());
         setState(() {
           _isLoading = false;
           _emailSent = true;
@@ -149,7 +149,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 32),
         PrimaryButton(
           text: 'Enter Verification Code',
-          onPressed: () => context.go(AppRouter.otp),
+          onPressed: () => context.go(AppRouter.otp, extra: {'email': _emailController.text}),
         ),
         const SizedBox(height: 16),
         TextButton(
