@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/theme/app_theme.dart';
 import 'core/routing/app_router.dart';
+import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: PharmGoApp()));
+  final container = ProviderContainer();
+  await container.read(authStateProvider.notifier).init();
+  runApp(UncontrolledProviderScope(container: container, child: const PharmGoApp()));
 }
 
 class PharmGoApp extends ConsumerWidget {
@@ -13,17 +17,13 @@ class PharmGoApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(appRouterProvider);
-    final themeMode = ref.watch(themeProvider);
-    final themeData = ref.watch(themeDataProvider);
-
     return MaterialApp.router(
       title: 'PharmGo',
       debugShowCheckedModeBanner: false,
-      theme: themeData,
-      darkTheme: themeData,
-      themeMode: themeMode,
-      routerConfig: router,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ref.watch(themeProvider),
+      routerConfig: AppRouter.router(ref),
     );
   }
 }

@@ -131,3 +131,28 @@ final searchResultsProvider = FutureProvider<List<Medicine>>((ref) async {
   if (query.isEmpty) return [];
   return ref.read(medicineServiceProvider).searchMedicines(query);
 });
+
+final bestSellersProvider = FutureProvider<List<Medicine>>((ref) async {
+  final service = ref.read(medicineServiceProvider);
+  final data = await service.getMedicines(ordering: '-sales_count');
+  final List results = data is List ? data : (data['results'] ?? data['data'] ?? []);
+  return results.map((e) => Medicine.fromJson(e)).toList();
+});
+
+final trendingProvider = FutureProvider<List<Medicine>>((ref) async {
+  final service = ref.read(medicineServiceProvider);
+  final data = await service.getMedicines(ordering: '-rating_avg');
+  final List results = data is List ? data : (data['results'] ?? data['data'] ?? []);
+  return results.map((e) => Medicine.fromJson(e)).toList();
+});
+
+final relatedMedicinesProvider = FutureProvider.family<List<Medicine>, int>((ref, medicineId) async {
+  final service = ref.read(medicineServiceProvider);
+  final medicine = await service.getMedicineDetail(medicineId);
+  final data = await service.getMedicines(categoryId: medicine.category);
+  final List results = data is List ? data : (data['results'] ?? data['data'] ?? []);
+  return results
+      .map((e) => Medicine.fromJson(e))
+      .where((m) => m.id != medicineId)
+      .toList();
+});

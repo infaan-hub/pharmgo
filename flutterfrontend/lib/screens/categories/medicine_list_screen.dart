@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/utils/breakpoints.dart';
 import '../../widgets/app_bar_widget.dart';
 import '../../widgets/medicine_card.dart';
 import '../../widgets/filter_chip_widget.dart';
@@ -29,7 +28,7 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(medicineListProvider.notifier).loadMedicines(
-            categoryId: widget.categoryId,
+            categoryId: int.tryParse(widget.categoryId),
             refresh: true,
           );
     });
@@ -38,7 +37,6 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
   @override
   Widget build(BuildContext context) {
     final medicineState = ref.watch(medicineListProvider);
-    final isDesktop = Breakpoints.isDesktop(context);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -46,7 +44,7 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.fromLTRB(isDesktop ? 32 : 20, 8, isDesktop ? 32 : 20, 8),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
             child: SizedBox(
               height: 36,
               child: ListView.separated(
@@ -59,12 +57,8 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
                     isSelected: _selectedFilter == _filters[index],
                     onTap: () {
                       setState(() => _selectedFilter = _filters[index]);
-                      final filter = _filters[index] == 'All'
-                          ? null
-                          : _filters[index].toLowerCase();
                       ref.read(medicineListProvider.notifier).loadMedicines(
-                            categoryId: widget.categoryId,
-                            filter: filter,
+                            categoryId: int.tryParse(widget.categoryId),
                             refresh: true,
                           );
                     },
@@ -91,7 +85,7 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
         message: state.error!,
         buttonText: 'Retry',
         onRetry: () => ref.read(medicineListProvider.notifier).loadMedicines(
-              categoryId: widget.categoryId,
+              categoryId: int.tryParse(widget.categoryId),
               refresh: true,
             ),
       );
@@ -102,29 +96,6 @@ class _MedicineListScreenState extends ConsumerState<MedicineListScreen> {
         icon: Icons.medication_outlined,
         title: 'No medicines found',
         subtitle: 'Try adjusting your filters',
-      );
-    }
-
-    final isDesktop = Breakpoints.isDesktop(context);
-    final columns = Breakpoints.gridColumns(context);
-
-    if (isDesktop || Breakpoints.isTablet(context)) {
-      return GridView.builder(
-        padding: EdgeInsets.all(Breakpoints.isDesktop(context) ? 32 : 20),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: columns,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 0.75,
-        ),
-        itemCount: state.medicines.length,
-        itemBuilder: (context, index) {
-          return MedicineCard(
-            medicine: state.medicines[index],
-            onTap: () => context.go('/medicine/${state.medicines[index].id}'),
-            onAddToCart: () {},
-          );
-        },
       );
     }
 

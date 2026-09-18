@@ -264,14 +264,14 @@ class _PrescriptionUploadScreenState
   Widget _buildPrescriptionItem(Prescription prescription) {
     Color statusColor;
     switch (prescription.status) {
-      case PrescriptionStatus.approved:
+      case PrescriptionStatus.verified:
         statusColor = AppColors.success;
         break;
       case PrescriptionStatus.rejected:
         statusColor = AppColors.error;
         break;
       default:
-        statusColor = AppColors.accent;
+        statusColor = AppColors.success;
     }
 
     return Container(
@@ -291,7 +291,7 @@ class _PrescriptionUploadScreenState
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              prescription.status == PrescriptionStatus.approved
+              prescription.status == PrescriptionStatus.verified
                   ? Icons.check_circle
                   : prescription.status == PrescriptionStatus.rejected
                       ? Icons.cancel
@@ -306,7 +306,7 @@ class _PrescriptionUploadScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  prescription.fileName ?? 'Prescription',
+                  prescription.fileName,
                   style: AppTextStyles.bodySmall.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -322,7 +322,7 @@ class _PrescriptionUploadScreenState
             ),
           ),
           Text(
-            Formatters.timeAgo(prescription.uploadedAt ?? DateTime.now()),
+            Formatters.timeAgo(prescription.uploadedAt),
             style: AppTextStyles.labelSmall,
           ),
         ],

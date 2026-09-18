@@ -16,14 +16,14 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
   bool _emailSent = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     super.dispose();
   }
 
@@ -31,7 +31,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await _authService.requestOtp(_emailController.text.trim());
+        await _authService.resetPassword(_usernameController.text.trim());
         setState(() {
           _isLoading = false;
           _emailSent = true;
@@ -75,7 +75,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           Text('Forgot Password', style: AppTextStyles.displayMedium),
           const SizedBox(height: 8),
           Text(
-            "Enter your email address and we'll send you a verification code.",
+            "Enter your username and we'll send a verification code to your saved contact.",
             style: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
@@ -97,13 +97,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(height: 32),
           AppTextField(
             label: 'Email Address',
-            hint: 'Enter your registered email',
-            controller: _emailController,
-            keyboardType: TextInputType.emailAddress,
-            prefix: const Icon(Icons.email_outlined, size: 20),
+            hint: 'Enter your username',
+            controller: _usernameController,
+            prefix: const Icon(Icons.person_outline, size: 20),
             validator: (value) {
               if (value == null || value.isEmpty) return 'Email is required';
-              if (!value.contains('@')) return 'Enter a valid email';
+              if (!RegExp(r'^[a-z0-9_]{4,20}$').hasMatch(value)) return 'Enter a valid username';
               return null;
             },
           ),
@@ -140,7 +139,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         Text('Email Sent!', style: AppTextStyles.displaySmall),
         const SizedBox(height: 12),
         Text(
-          'We\'ve sent a verification code to\n${_emailController.text}',
+          'We\'ve sent a verification code for\n${_usernameController.text}',
           style: AppTextStyles.bodyMedium.copyWith(
             color: AppColors.textSecondary,
           ),
@@ -149,7 +148,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         const SizedBox(height: 32),
         PrimaryButton(
           text: 'Enter Verification Code',
-          onPressed: () => context.go(AppRouter.otp, extra: {'email': _emailController.text}),
+          onPressed: () => context.go(AppRouter.otp),
         ),
         const SizedBox(height: 16),
         TextButton(

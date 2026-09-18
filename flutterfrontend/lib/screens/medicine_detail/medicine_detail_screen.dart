@@ -32,7 +32,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final medicineAsync = ref.watch(medicineDetailProvider(widget.medicineId));
+    final medicineAsync = ref.watch(medicineDetailProvider(int.tryParse(widget.medicineId) ?? 0));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -42,7 +42,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
         error: (e, _) => ErrorState(
           message: e.toString(),
           buttonText: 'Retry',
-          onRetry: () => ref.invalidate(medicineDetailProvider(widget.medicineId)),
+          onRetry: () => ref.invalidate(medicineDetailProvider(int.tryParse(widget.medicineId) ?? 0)),
         ),
       ),
     );
@@ -52,7 +52,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
     if (_selectedDosage == null && medicine.dosageOptions.isNotEmpty) {
       _selectedDosage = medicine.dosageOptions.first;
     } else if (_selectedDosage == null) {
-      _selectedDosage = medicine.dosage ?? 'Default';
+      _selectedDosage = medicine.dosage;
     }
 
     return Column(
@@ -157,7 +157,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
                           if (medicine.hasDiscount) ...[
                             const SizedBox(width: 8),
                             Text(
-                              Formatters.formatCurrency(medicine.originalPrice!),
+                              Formatters.formatCurrency(medicine.originalPrice),
                               style: AppTextStyles.bodyMedium.copyWith(
                                 decoration: TextDecoration.lineThrough,
                                 color: AppColors.textSecondary,
@@ -228,14 +228,14 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
                       const SizedBox(height: 24),
                       _buildExpandableSection(
                         'Uses',
-                        medicine.uses ?? 'No information available.',
+                        medicine.uses,
                         _isExpandedUses,
                         () => setState(() => _isExpandedUses = !_isExpandedUses),
                       ),
                       const Divider(color: AppColors.divider),
                       _buildExpandableSection(
                         'Side Effects',
-                        medicine.sideEffects ?? 'No information available.',
+                        medicine.sideEffects,
                         _isExpandedSideEffects,
                         () => setState(
                             () => _isExpandedSideEffects = !_isExpandedSideEffects),
@@ -243,7 +243,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
                       const Divider(color: AppColors.divider),
                       _buildExpandableSection(
                         'Ingredients',
-                        medicine.ingredients ?? 'No information available.',
+                        medicine.ingredients,
                         _isExpandedIngredients,
                         () => setState(
                             () => _isExpandedIngredients = !_isExpandedIngredients),
@@ -325,7 +325,7 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
   }
 
   Widget _buildRelatedProducts() {
-    final relatedAsync = ref.watch(relatedMedicinesProvider(widget.medicineId));
+    final relatedAsync = ref.watch(relatedMedicinesProvider(int.tryParse(widget.medicineId) ?? 0));
     return relatedAsync.when(
       data: (medicines) {
         if (medicines.isEmpty) return const SizedBox();
@@ -428,7 +428,6 @@ class _MedicineDetailScreenState extends ConsumerState<MedicineDetailScreen> {
                 onPressed: () {
                   ref.read(cartProvider.notifier).addToCart(
                         medicineId: medicine.id,
-                        dosage: _selectedDosage ?? '',
                         quantity: _quantity,
                       );
                   ScaffoldMessenger.of(context).showSnackBar(

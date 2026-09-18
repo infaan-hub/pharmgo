@@ -18,6 +18,10 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        username = attrs["username"].lower()
+        if not __import__("re").fullmatch(r"[a-z0-9_]{4,20}", username):
+            raise serializers.ValidationError({"username": "Use 4–20 lowercase letters, numbers, or underscores."})
+        attrs["username"] = username
         if attrs["password"] != attrs["password_confirm"]:
             raise serializers.ValidationError({"password_confirm": "Passwords do not match."})
         return attrs
@@ -32,7 +36,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
+    username = serializers.RegexField(r"^[a-z0-9_]{4,20}$")
     password = serializers.CharField(write_only=True)
 
 
@@ -43,7 +47,7 @@ class UserSerializer(serializers.ModelSerializer):
             "id", "email", "username", "first_name", "last_name",
             "phone", "role", "created_at", "updated_at",
         ]
-        read_only_fields = ["id", "email", "role", "created_at", "updated_at"]
+        read_only_fields = ["id", "role", "created_at", "updated_at"]
 
 
 class AddressSerializer(serializers.ModelSerializer):

@@ -57,4 +57,8 @@ class CartNotifier extends StateNotifier<Cart> {
       await loadCart();
     } catch (_) {}
   }
+
+  Future<void> applyPromoCode(String code) async {
+    // Stub: promo code logic to be implemented
+  }
 }

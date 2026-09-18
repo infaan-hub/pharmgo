@@ -19,7 +19,7 @@ class OrderDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final orderAsync = ref.watch(orderDetailProvider(orderId));
+    final orderAsync = ref.watch(orderDetailProvider(int.tryParse(orderId) ?? 0));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -153,7 +153,7 @@ class OrderDetailsScreen extends ConsumerWidget {
       child: Row(
         children: [
           ProductImage(
-            imageUrl: item.medicine.imageUrl,
+            imageUrl: item.medicine?.imageUrl ?? '',
             width: 48,
             height: 48,
             borderRadius: 10,
@@ -163,7 +163,7 @@ class OrderDetailsScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.medicine.name, style: AppTextStyles.bodySmall.copyWith(
+                Text(item.medicine?.name ?? '', style: AppTextStyles.bodySmall.copyWith(
                   fontWeight: FontWeight.w600,
                 )),
                 Text(

@@ -72,4 +72,8 @@ class AddressService {
   Future<void> deleteAddress(int id) async {
     await _dio.delete('${ApiConstants.addresses}$id/');
   }
+
+  Future<void> setDefault(int id) async {
+    await _dio.patch('${ApiConstants.addresses}$id/', data: {'is_default': true});
+  }
 }

@@ -8,6 +8,9 @@ class CartItem {
   final double lineTotal;
   final String? selectedDosage;
 
+  Medicine? get medicine => medicineDetail;
+  double get totalPrice => lineTotal;
+
   CartItem({
     required this.id,
     required this.medicineId,
@@ -30,8 +33,6 @@ class CartItem {
     );
   }
 
-  Medicine get medicine => medicineDetail ?? Medicine(id: medicineId, name: '', slug: '', price: 0, category: 0);
-  double get totalPrice => lineTotal > 0 ? lineTotal : medicine.price * quantity;
   bool get canIncrement => quantity < 10;
   bool get canDecrement => quantity > 1;
 }
@@ -45,7 +46,7 @@ class Cart {
   final double discount;
 
   Cart({
-    required this.id,
+    this.id = 0,
     this.items = const [],
     this.subtotal = 0.0,
     this.deliveryFee = 0.0,

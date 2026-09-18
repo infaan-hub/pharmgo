@@ -13,7 +13,7 @@ class StarRating extends StatelessWidget {
     required this.rating,
     this.maxRating = 5,
     this.size = 16,
-    this.activeColor = AppColors.accent,
+    this.activeColor = AppColors.success,
     this.inactiveColor = AppColors.divider,
   });
 

@@ -42,7 +42,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       setState(() => _isSaving = true);
       try {
         await ref.read(authStateProvider.notifier).updateProfile(
-              fullName: _fullNameController.text.trim(),
+              firstName: _fullNameController.text.trim(),
               phone: _phoneController.text.trim(),
             );
         if (mounted) {

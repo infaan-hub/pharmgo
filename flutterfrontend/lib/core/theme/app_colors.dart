@@ -14,28 +14,24 @@ class AppColors {
   static const Color success = Color(0xFF4C6B3F);
   static const Color error = Color(0xFFB0463C);
   static const Color white = Color(0xFFFFFFFF);
-  static const Color accent = Color(0xFFF4B41B);
 
-  static const Color shadow = Color(0x1A000000);
-  static const Color overlay = Color(0x33000000);
+  // Semantic roles: widgets use these rather than inventing color literals.
+  static const Color primary = primaryDark;
+  static const Color secondary = success;
+  static const Color surface = cardSurface;
+  static const Color border = divider;
 }
 
+/// Dark mode has the same public roles as [AppColors], keeping themes structurally aligned.
 class AppColorsDark {
   AppColorsDark._();
-
-  static const Color primaryDark = Color(0xFF8BA87A);
-  static const Color primaryDarkHover = Color(0xFF9DB98C);
-  static const Color background = Color(0xFF1A1A14);
-  static const Color cardSurface = Color(0xFF2A2A22);
-  static const Color cardSurfaceAlt = Color(0xFF333328);
-  static const Color textPrimary = Color(0xFFF3EEE3);
-  static const Color textSecondary = Color(0xFFB0A99A);
-  static const Color divider = Color(0xFF3D3D32);
-  static const Color success = Color(0xFF7BA36A);
-  static const Color error = Color(0xFFD4655B);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color accent = Color(0xFFF4B41B);
-
-  static const Color shadow = Color(0x33000000);
-  static const Color overlay = Color(0x66000000);
+  static const Color primary = AppColors.cardSurface;
+  static const Color secondary = AppColors.success;
+  static const Color background = AppColors.primaryDarkHover;
+  static const Color surface = AppColors.primaryDark;
+  static const Color error = AppColors.error;
+  static const Color success = AppColors.success;
+  static const Color textPrimary = AppColors.background;
+  static const Color textSecondary = AppColors.cardSurfaceAlt;
+  static const Color border = AppColors.textSecondary;
 }

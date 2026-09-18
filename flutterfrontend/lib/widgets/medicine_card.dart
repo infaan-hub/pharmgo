@@ -41,11 +41,11 @@ class MedicineCard extends StatelessWidget {
                 color: AppColors.cardSurface,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: medicine.imageUrl != null
+              child: medicine.imageUrl.isNotEmpty
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: CachedNetworkImage(
-                        imageUrl: medicine.imageUrl!,
+                        imageUrl: medicine.imageUrl,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
@@ -81,10 +81,10 @@ class MedicineCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (medicine.dosage != null) ...[
+                  if (medicine.dosage.isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
-                      medicine.dosage!,
+                      medicine.dosage,
                       style: AppTextStyles.labelSmall.copyWith(
                         color: AppColors.textSecondary,
                       ),
@@ -103,7 +103,7 @@ class MedicineCard extends StatelessWidget {
                       if (medicine.hasDiscount) ...[
                         const SizedBox(width: 6),
                         Text(
-                          Formatters.formatCurrency(medicine.originalPrice!),
+                          Formatters.formatCurrency(medicine.originalPrice),
                           style: AppTextStyles.bodySmall.copyWith(
                             decoration: TextDecoration.lineThrough,
                           ),

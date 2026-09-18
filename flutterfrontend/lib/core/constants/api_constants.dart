@@ -14,6 +14,7 @@ class ApiConstants {
   static const String otpRequest = '/api/auth/otp/request/';
   static const String otpVerify = '/api/auth/otp/verify/';
   static const String passwordReset = '/api/auth/password/reset/';
+  static const String usernameAvailable = '/api/auth/username-available/';
 
   // Accounts
   static const String profile = '/api/accounts/me/';
@@ -39,6 +40,7 @@ class ApiConstants {
 
   // Notifications
   static const String notifications = '/api/notifications/';
+  static const String wishlistItems = '/api/wishlist/items/';
 
   // Support
   static const String faqs = '/api/support/faqs/';

@@ -57,27 +57,24 @@ class AddressListNotifier extends StateNotifier<AddressListState> {
   }
 
   Future<void> addAddress({
-    String? name,
-    String? addressLine1,
+    required String name,
+    required String addressLine1,
     String? addressLine2,
-    String? city,
-    String? stateValue,
-    String? zipCode,
-    String? label,
-    String? fullName,
-    String? phone,
-    String? street,
-    String? apartment,
+    required String city,
+    required String stateValue,
+    required String zipCode,
     bool isDefault = false,
+    String label = 'Home',
+    String phone = '',
   }) async {
     try {
       final address = await _service.addAddress(
-        name: name ?? fullName ?? '',
-        addressLine1: addressLine1 ?? street ?? '',
-        addressLine2: addressLine2 ?? apartment,
-        city: city ?? '',
-        state: stateValue ?? '',
-        zipCode: zipCode ?? '',
+        name: name,
+        addressLine1: addressLine1,
+        addressLine2: addressLine2,
+        city: city,
+        state: stateValue,
+        zipCode: zipCode,
         isDefault: isDefault,
       );
       state = state.copyWith(addresses: [...state.addresses, address]);
@@ -99,8 +96,9 @@ class AddressListNotifier extends StateNotifier<AddressListState> {
 
   Future<void> setDefault(int id) async {
     try {
-      final updatedAddresses = state.addresses.map((a) {
-        return Address(
+      await _service.setDefault(id);
+      state = state.copyWith(
+        addresses: state.addresses.map((a) => Address(
           id: a.id,
           name: a.name,
           addressLine1: a.addressLine1,
@@ -113,13 +111,9 @@ class AddressListNotifier extends StateNotifier<AddressListState> {
           lat: a.lat,
           lng: a.lng,
           label: a.label,
-          fullName: a.fullName,
           phone: a.phone,
-          street: a.street,
-          apartment: a.apartment,
-        );
-      }).toList();
-      state = state.copyWith(addresses: updatedAddresses);
+        )).toList(),
+      );
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }

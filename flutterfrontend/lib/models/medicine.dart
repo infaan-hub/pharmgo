@@ -76,4 +76,15 @@ class Medicine {
   bool get hasDiscount => originalPrice != null && originalPrice! > price;
   double get discountPercent => hasDiscount ? ((originalPrice! - price) / originalPrice! * 100) : 0;
   bool get inStock => stockQuantity > 0;
+  String get imageUrl => image ?? '';
+  String get dosage => dosageOptions.isNotEmpty ? dosageOptions.first.toString() : '';
+  bool get isFavorite => false;
+  double get rating => ratingAvg;
+  int get reviewCount => 0;
+  bool get hasDiscount => false;
+  double get originalPrice => price * (1 + discountPercent / 100);
+  int get discountPercent => 0;
+  String get uses => description ?? '';
+  String get sideEffects => '';
+  String get ingredients => '';
 }

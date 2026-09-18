@@ -10,11 +10,8 @@ class Address {
   final bool isDefault;
   final double? lat;
   final double? lng;
-  final String? label;
-  final String? fullName;
-  final String? phone;
-  final String? street;
-  final String? apartment;
+  final String label;
+  final String phone;
 
   Address({
     required this.id,
@@ -28,12 +25,12 @@ class Address {
     this.isDefault = false,
     this.lat,
     this.lng,
-    this.label,
-    this.fullName,
-    this.phone,
-    this.street,
-    this.apartment,
+    this.label = 'Home',
+    this.phone = '',
   });
+
+  String get fullName => name;
+  String get addressLine => addressLine1;
 
   factory Address.fromJson(Map<String, dynamic> json) {
     return Address(
@@ -48,16 +45,10 @@ class Address {
       isDefault: json['is_default'] ?? false,
       lat: json['lat']?.toDouble(),
       lng: json['lng']?.toDouble(),
-      label: json['label'] ?? json['name'],
-      fullName: json['full_name'],
-      phone: json['phone'],
-      street: json['street'],
-      apartment: json['apartment'],
+      label: json['label'] ?? 'Home',
+      phone: json['phone'] ?? '',
     );
   }
-
-  String get displayLabel => label ?? name;
-  String get displayFullName => fullName ?? name;
 
   String get fullAddress {
     final parts = [addressLine1];

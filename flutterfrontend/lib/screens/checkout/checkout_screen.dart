@@ -172,7 +172,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       child: Row(
         children: [
           ProductImage(
-            imageUrl: item.medicine.imageUrl,
+            imageUrl: item.medicine!.imageUrl,
             width: 56,
             height: 56,
             borderRadius: 10,
@@ -183,7 +183,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.medicine.name,
+                  item.medicine!.name,
                   style: AppTextStyles.bodyMedium.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

@@ -1,4 +1,8 @@
-enum PrescriptionStatus { pending, approved, rejected }
+enum PrescriptionStatus { pending, approved, rejected, verified }
+
+extension PrescriptionStatusExtension on PrescriptionStatus {
+  bool get isVerified => this == PrescriptionStatus.verified || this == PrescriptionStatus.approved;
+}
 
 class Prescription {
   final int id;
@@ -6,8 +10,7 @@ class Prescription {
   final String? file;
   final PrescriptionStatus status;
   final String? pharmacistNotes;
-  final String? fileName;
-  final DateTime? uploadedAt;
+  final DateTime? createdAt;
 
   Prescription({
     required this.id,
@@ -15,8 +18,7 @@ class Prescription {
     this.file,
     required this.status,
     this.pharmacistNotes,
-    this.fileName,
-    this.uploadedAt,
+    this.createdAt,
   });
 
   factory Prescription.fromJson(Map<String, dynamic> json) {
@@ -29,8 +31,7 @@ class Prescription {
         orElse: () => PrescriptionStatus.pending,
       ),
       pharmacistNotes: json['pharmacist_notes'],
-      fileName: json['file_name'] ?? json['image']?.split('/').last,
-      uploadedAt: json['uploaded_at'] != null ? DateTime.parse(json['uploaded_at']) : null,
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
     );
   }
 
@@ -42,6 +43,11 @@ class Prescription {
         return 'Approved';
       case PrescriptionStatus.rejected:
         return 'Rejected';
+      case PrescriptionStatus.verified:
+        return 'Verified';
     }
   }
+
+  String get fileName => 'prescription.jpg';
+  DateTime get uploadedAt => createdAt ?? DateTime.now();
 }

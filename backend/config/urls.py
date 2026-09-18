@@ -23,6 +23,7 @@ urlpatterns = [
     path("api/pharmacies/", include("pharmacies.urls")),
     path("api/notifications/", include("notifications.urls")),
     path("api/support/", include("support.urls")),
+    path("api/wishlist/", include("wishlist.urls")),
 ]
 
 if settings.DEBUG:

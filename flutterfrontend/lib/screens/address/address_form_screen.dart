@@ -44,17 +44,17 @@ class _AddressFormScreenState extends ConsumerState<AddressFormScreen> {
   void _saveAddress() {
     if (_formKey.currentState!.validate()) {
       ref.read(addressListProvider.notifier).addAddress(
-            label: _selectedLabel,
-            fullName: _fullNameController.text.trim(),
-            phone: _phoneController.text.trim(),
-            street: _streetController.text.trim(),
-            apartment: _apartmentController.text.isNotEmpty
+            name: _fullNameController.text.trim(),
+            addressLine1: _streetController.text.trim(),
+            addressLine2: _apartmentController.text.isNotEmpty
                 ? _apartmentController.text.trim()
                 : null,
             city: _cityController.text.trim(),
             stateValue: _stateController.text.trim(),
             zipCode: _zipController.text.trim(),
             isDefault: _isDefault,
+            label: _selectedLabel,
+            phone: _phoneController.text.trim(),
           );
       context.pop();
     }

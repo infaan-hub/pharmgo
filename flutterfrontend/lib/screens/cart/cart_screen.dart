@@ -113,7 +113,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       child: Row(
         children: [
           ProductImage(
-            imageUrl: item.medicine.imageUrl,
+            imageUrl: item.medicine!.imageUrl,
             width: 64,
             height: 64,
             borderRadius: 12,
@@ -124,7 +124,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.medicine.name,
+                  item.medicine!.name,
                   style: AppTextStyles.titleSmall,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -149,7 +149,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             children: [
               GestureDetector(
                 onTap: () {
-                  ref.read(cartProvider.notifier).removeItem(item.medicine.id);
+                  ref.read(cartProvider.notifier).removeItem(item.medicine!.id);
                 },
                 child: const Icon(
                   Icons.close,
@@ -163,13 +163,13 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 compact: true,
                 onIncrement: item.canIncrement
                     ? () => ref.read(cartProvider.notifier).updateQuantity(
-                          item.medicine.id,
+                          item.medicine!.id,
                           item.quantity + 1,
                         )
                     : null,
                 onDecrement: item.canDecrement
                     ? () => ref.read(cartProvider.notifier).updateQuantity(
-                          item.medicine.id,
+                          item.medicine!.id,
                           item.quantity - 1,
                         )
                     : null,

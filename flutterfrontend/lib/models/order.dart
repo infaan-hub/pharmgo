@@ -32,6 +32,8 @@ class OrderItem {
 
   Medicine get medicine => medicineDetail ?? Medicine(id: medicineId, name: '', slug: '', price: 0, category: 0);
   double get totalPrice => priceAtPurchase * quantity;
+  Medicine? get medicine => medicineDetail;
+  String get selectedDosage => '';
 }
 
 class Order {
@@ -120,4 +122,8 @@ class Order {
         return 0;
     }
   }
+
+  String get orderNumber => '#$id';
+  String get shippingAddress => '';
+  double get discount => 0.0;
 }

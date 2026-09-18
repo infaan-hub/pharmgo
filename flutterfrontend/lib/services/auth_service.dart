@@ -67,16 +67,16 @@ class AuthService {
     return _currentUser!;
   }
 
-  Future<void> requestOtp(String email) async {
-    await _dio.post(ApiConstants.otpRequest, data: {'email': email});
+  Future<void> requestOtp(String username) async {
+    await _dio.post(ApiConstants.otpRequest, data: {'username': username});
   }
 
-  Future<void> verifyOtp({required String email, required String otp}) async {
-    await _dio.post(ApiConstants.otpVerify, data: {'email': email, 'otp': otp});
+  Future<void> verifyOtp({required String username, required String otp}) async {
+    await _dio.post(ApiConstants.otpVerify, data: {'username': username, 'otp': otp});
   }
 
-  Future<void> resetPassword(String email) async {
-    await _dio.post(ApiConstants.passwordReset, data: {'email': email});
+  Future<void> resetPassword(String username) async {
+    await _dio.post(ApiConstants.passwordReset, data: {'username': username});
   }
 
   Future<void> confirmResetPassword({
